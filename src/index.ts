@@ -1,17 +1,15 @@
 import Bull from 'bull';
 import  { CronTime } from 'cron-time-generator';
 
-
-
 const queue = new Bull<Action>("job-queue")
 
 let action1: Action = {
     chatId: "woww",
     name: "Action 1",
     sched: {
-        day: "saturday",
-        hh: 0,
-        mm: 22,
+        days: [1],
+        hour: 0,
+        min: 22,
         start: new Date(),
         cycles: 4,
     },
@@ -21,9 +19,9 @@ let action2: Action = {
     chatId: "woww",
     name: "Action 2",
     sched: {
-        day: "monday",
-        hh: 12,
-        mm: 30,
+        days: [2],
+        hour: 12,
+        min: 30,
         start: new Date(),
         cycles: 4,
     },
@@ -33,9 +31,9 @@ let action3: Action = {
     chatId: "woww",
     name: "Action 3",
     sched: {
-        day: "monday",
-        hh: 12,
-        mm: 30,
+        days: [3],
+        hour: 12,
+        min: 30,
         start: new Date(),
         cycles: 4,
     },
@@ -44,8 +42,8 @@ let action3: Action = {
 async function main() {
     
     console.log("action 1");
-    const { day, hh, mm } = action1.sched;
-    const cron = CronTime.onSpecificDaysAt([day], hh, mm);
+    const { days, hour, min } = action1.sched;
+    const cron = CronTime.onSpecificdayssAt([days], hour, min);
     console.log(cron);
     
     await queue.add(action1, {

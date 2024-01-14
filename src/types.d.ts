@@ -2,14 +2,17 @@ type Action = {
     chatId: string,
     name: string,
     sched: Sched,
+    templateMessageId: string,
     [key: string]: any,
 }
 
+type Day = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
 type Sched = {
     start: Date,
-    day: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday",
+    days: Day[],
     cycles: number,
-    hh: number,
-    mm: number,
+    hour: number,
+    min: number,
 }
 
