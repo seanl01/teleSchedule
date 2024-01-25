@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api'
-import { StateManager } from './utils/utils.js';
+import { StateManager } from './data/StateManager.js';
 import dotenv from 'dotenv';
 import { Message } from 'telegram-typings/index.js';
 import { BotQuestions } from './response.js';
