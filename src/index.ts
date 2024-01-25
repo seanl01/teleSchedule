@@ -43,7 +43,7 @@ async function main() {
     
     console.log("action 1");
     const { days, hour, min } = action1.sched;
-    const cron = CronTime.onSpecificdayssAt([days], hour, min);
+    const cron = CronTime.onSpecificDaysAt([days], hour, min);
     console.log(cron);
     
     await queue.add(action1, {

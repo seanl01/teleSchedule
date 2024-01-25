@@ -1,24 +1,18 @@
 import client from "./redis.js";
 import queue from "./bull.js"
-import { CronRepeatOptions, RepeatOptions } from "bull";
+import { CronRepeatOptions } from "bull";
 import { CronTime } from "cron-time-generator";
-export class ConversationManager {
+
+export class StateManager {
+    // Manages storing of user's conversation state in redis
+
     chatId: string;
     userId: string;
     key: string;
-    state: number | null = null;
-
-    static MAX: number = 2;
-    static MIN: number = 0;
-
-    messages = [
-        "Input",
-        "Hello",
-        "2",
-    ]
+    state: State | null;
 
     constructor(msg) {
-        const { chatId, userId } = ConversationManager.getUserIdAndChatId(msg);
+        const { chatId, userId } = StateManager.getUserIdAndChatId(msg);
 
         this.chatId = chatId;
         this.userId = userId;
@@ -27,37 +21,48 @@ export class ConversationManager {
     }
 
     async init() {
-        this.state = await this.syncChatState();
+        this.state = await this.#getRedisChatState();
     }
 
     // returns user state if exists
-    async syncChatState(): Promise<null | number> {
+    async #getRedisChatState(): Promise<State | null> {
         const state = await client.get(this.key);
-        this.state = state ? parseInt(state) : null;
-        return state;
+        return JSON.parse(state);
     }
 
-    async incrementChatState() {
-        const state = await this.syncChatState();
-        await this.setChatState(state + 1);
+    async incrementChatIndex() {
+        await this.setChatState((state) => { state.index += 1; return state });
     }
 
-    async deleteChatState() {
-        await client.del(this.key);
+    async setAction(action: Partial<Action>) {
+        this.state.action = action;
+        await this.setChatState(this.state);
     }
 
-    async setChatState(newState: number | Function) {
+    async setChatState(newState: State | Function) {
         // If reducer function
         let state = null;
+
         if (typeof newState === "function") {
-            const current = await this.syncChatState();
+            const current = await this.#getRedisChatState();
             state = newState(current);
         }
         else {
             state = newState;
         }
-        await client.set(this.key, state.toString());
-        this.state = state;
+
+        try {
+            await client.set(this.key, JSON.stringify(state));
+            this.state = state;
+        }
+
+        catch (e) {
+            throw e;
+        }
+    }
+
+    async deleteChatState() {
+        await client.del(this.key);
     }
 
     static getUserIdAndChatId(msg): { chatId: string, userId: string } {
@@ -66,21 +71,15 @@ export class ConversationManager {
         return { chatId, userId };
     }
 
-    getMessageAtState(): string {
-        return this.messages[this.state];
-    }
-
     stateExists(): boolean {
         return this.state !== null;
-    }
-
-    stateWithinBounds(): boolean {
-        return this.state < ConversationManager.MAX;
     }
 
 }
 
 export class ActionScheduler {
+    // schedules a given action into the redis queue
+
     action: Action;
     key: string;
 
@@ -89,14 +88,14 @@ export class ActionScheduler {
         this.key = `${action.chatId}:${action.userId}`;
     }
 
-    async scheduleAction() {
+    async schedule() {
         const repeatOpts = this.#getOptionsFromSchedule()
         await queue.add(this.key, this.action, {
             repeat: repeatOpts,
         });
     }
 
-    async removeAction() {
+    async remove() {
         await queue.removeRepeatableByKey(this.key);
     }
 

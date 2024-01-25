@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch src/tele.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
     "cron-time-generator": "^2.0.3",
     "dotenv": "^16.3.1",
     "node-telegram-bot-api": "^0.64.0",
-    "redis": "^4.6.12"
+    "redis": "^4.6.12",
+    "telegram-typings": "^5.0.0"
   }
 }
