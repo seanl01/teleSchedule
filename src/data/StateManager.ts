@@ -1,4 +1,5 @@
 import client from "./redis.js";
+import { Message } from "telegram-typings/index.js";
 
 export class StateManager {
     // Manages storing of user's conversation state in redis
@@ -7,8 +8,13 @@ export class StateManager {
     userId: string;
     key: string;
     state: State | null;
+    
+    async init(msg: Message) {
+        this.#bindConversation(msg);
+        this.state = await this.#getRedisChatState();
+    }
 
-    constructor(msg) {
+    #bindConversation(msg: Message) {
         const { chatId, userId } = StateManager.getUserIdAndChatId(msg);
 
         this.chatId = chatId;
@@ -16,11 +22,6 @@ export class StateManager {
 
         this.key = `${chatId}:${userId}`;
     }
-
-    async init() {
-        this.state = await this.#getRedisChatState();
-    }
-
     // returns user state if exists
     async #getRedisChatState(): Promise<State | null> {
         const state = await client.get(this.key);
@@ -31,10 +32,10 @@ export class StateManager {
         await this.setChatState((state) => { state.index += 1; return state });
     }
 
-    async setAction(action: Partial<Action>) {
-        this.state.action = action;
-        await this.setChatState(this.state);
-    }
+    // async setAction(action: Partial<Action>) {
+    //     this.state.action = action;
+    //     await this.setChatState(this.state);
+    // }
 
     async setChatState(newState: State | Function) {
         // If reducer function

@@ -13,7 +13,7 @@ type Day = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 type Sched = {
     start: Date,
     days: Day[],
-    cycles: number,
+    endDate: Date,
     hour: number,
     min: number,
 }

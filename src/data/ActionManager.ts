@@ -5,7 +5,6 @@ import { CronTime } from "cron-time-generator";
 
 export default class ActionScheduler {
     // schedules a given action into the redis queue
-
     action: Action;
     key: string;
 
@@ -28,18 +27,13 @@ export default class ActionScheduler {
     #getOptionsFromSchedule(): CronRepeatOptions {
         return {
             cron: this.#parseSchedToCron(),
-            endDate: this.#getEndDateFromSchedule(),
+            endDate: this.action.sched.endDate,
         }
     }
 
     #parseSchedToCron(): string {
         const { hour, min, days } = this.action.sched;
         return CronTime.onSpecificDaysAt(days, hour, min);
-    }
-
-    #getEndDateFromSchedule(): Date | undefined {
-        const sched = this.action.sched;
-        return new Date(sched.start.getTime() + (sched.cycles * 86400000));
     }
 
 }
