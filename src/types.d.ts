@@ -21,6 +21,6 @@ type Sched = {
 type State = {
     index: number,
     retry?: boolean,
-    action: Partial<Action>,
+    action: Action,
 }
 

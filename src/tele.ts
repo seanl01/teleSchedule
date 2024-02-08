@@ -1,24 +1,23 @@
 import TelegramBot from 'node-telegram-bot-api'
-import { StateManager } from './data/StateManager.js';
 import dotenv from 'dotenv';
 import { Message } from 'telegram-typings/index.js';
-import { BotQuestions } from './response.js';
+import Conversation from './controller/Conversation.js';
+import conversationConfig from './controller/config.js';
+import StateManager from './data/StateManager.js';
+
 dotenv.config();
 
 // @ts-ignore
 const token = process.env.TELE_KEY;
-
 const bot = new TelegramBot(token, { polling: true });
 
+const stages = conversationConfig.map((config) => config.stage);
+const conversation = new Conversation(stages, StateManager);
+
 bot.onText(/\/start/, async (msg: Message) => {
-    await bot.sendMessage(msg.chat.id, "Send your template message");
-
-    const conversation = new StateManager(msg);
-    await conversation.init();
-
-    const initialState: State = {index: 0, action: { chatId:conversation.chatId }};
-    await conversation.setChatState(initialState);
-
+    const response = await conversation.start(msg);
+    console.log(response);
+    await bot.sendMessage(msg.chat.id, response);
 });
 
 
@@ -35,38 +34,9 @@ bot.on("text", async (msg: Message) => {
     if (msg.text === "/start") return;
 
     // Ongoing conversation with user
-    
-    if (index === BotQuestions.TEMPLATE_MESSAGE) {
-        await stateMgr.setAction({
-            ...state.action,
-            templateMessageId: msg.message_id.toString()
-        });
-        await bot.sendMessage(chatId, "Send your days");
-    }
-
-    else if (index === BotQuestions.DAYS) {
-        if (text !== "1,2,4") {
-            await bot.sendMessage(chatId, "Invalid days" + "\n" + "Send your days");
-            return;
-        }
-        await stateMgr.setAction({
-            ...state.action,
-            sched: {
-                days: [1,2,4]
-            }
-        }); 
-        await bot.sendMessage(chatId, "well done");
-    }
-    
-    else if (index === BotQuestions.DONE) {
-        console.log("Done");
-        await bot.sendMessage(chatId, "Done");
-        stateMgr.deleteChatState();
-        return;
-    }
-
-    await stateMgr.incrementChatIndex();
-    
+    const response = await conversation.receiveMessage(msg);
+    console.log(response);
+    await bot.sendMessage(msg.chat.id, response);
 })
 
 

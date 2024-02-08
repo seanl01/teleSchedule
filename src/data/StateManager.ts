@@ -1,7 +1,8 @@
 import client from "./redis.js";
 import { Message } from "telegram-typings/index.js";
+import { StateSettingError } from "../common/errors.js";
 
-export class StateManager {
+export default class StateManager {
     // Manages storing of user's conversation state in redis
 
     chatId: string;
@@ -37,6 +38,10 @@ export class StateManager {
     //     await this.setChatState(this.state);
     // }
 
+    getChatState(): State | null {
+        return this.state;
+    }
+
     async setChatState(newState: State | Function) {
         // If reducer function
         let state = null;
@@ -55,7 +60,7 @@ export class StateManager {
         }
 
         catch (e) {
-            throw e;
+            throw new StateSettingError("Error while setting redis state");
         }
     }
 
