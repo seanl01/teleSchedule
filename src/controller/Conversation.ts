@@ -8,7 +8,6 @@ import ActionScheduler from "../data/ActionManager.js";
 //     return stage.askAgain()
 // }
 
-
 // Takes in session key (userId and chatId)
 export default class Conversation {
   // receives msg: Message object
@@ -19,9 +18,13 @@ export default class Conversation {
 
   // Dependency injection
   constructor(config: ConversationConfig) {
-    this.stages = config.stageWithMutators.map((stageWithMutator) => stageWithMutator.stage);
+    this.stages = config.stageWithMutators.map(
+      (stageWithMutator) => stageWithMutator.stage,
+    );
     this.stateManager = new config.stateManager();
-    this.mutators = config.stageWithMutators.map((stageWithMutator) => stageWithMutator.mutator);
+    this.mutators = config.stageWithMutators.map(
+      (stageWithMutator) => stageWithMutator.mutator,
+    );
   }
 
   async start(msg: Message): Promise<string> {
@@ -35,60 +38,59 @@ export default class Conversation {
       await this.stateManager.init(msg);
       await this.stateManager.setChatState({ index: 0, action });
       return this.stages[0].ask();
-    }
-
-    catch (err) {
+    } catch (err) {
       console.log(err);
       return "Something went wrong. Please try again later.";
     }
   }
 
   async receiveMessage(msg: Message): Promise<string> {
-    // 
+    //
     await this.stateManager.init(msg);
     const state = this.stateManager.getChatState();
     const curIndex = state?.index ?? 0;
 
     const stage = this.stages[curIndex];
 
-    if (!stage.validate(msg.text))
-      return stage.askAgain();
+    if (!stage.validate(msg.text)) return stage.askAgain();
 
     try {
       const answer = stage.getCleanAnswer(msg);
-  
+
       const actionModel = new ActionModel(state.action);
-      
+
       // Change the action model
       const mutator = this.mutators[curIndex];
       mutator(actionModel, answer);
-      
+
       console.log("Model: ", actionModel.model);
       this.stateManager.setChatState({
         index: curIndex + 1,
-        action: actionModel.model
+        action: actionModel.model,
       });
 
       return await this.#askNextQuestionOrEnd(curIndex);
-    }
-    catch (error) {
+    } catch (error) {
       console.log(error);
-      return "Something went wrong. Please try again later."
+      return "Something went wrong. Please try again later.";
     }
-
   }
 
   async #askNextQuestionOrEnd(curIndex: number): Promise<string> {
     if (curIndex + 1 < this.stages.length)
       return this.stages[curIndex + 1].ask();
-    else
-      return await this.#endConversation();
+    else return await this.end();
   }
 
-  async #endConversation(): Promise<string> {
+  async end(): Promise<string> {
     await this.#processAction();
     await this.stateManager.deleteChatState();
     return "Done!";
+  }
+
+  async abort(): Promise<string> {
+    await this.stateManager.deleteChatState();
+    return "Aborted!";
   }
 
   async #processAction(): Promise<void> {
@@ -97,22 +99,20 @@ export default class Conversation {
     await scheduler.schedule();
   }
 
-  async remove(msg: Message): Promise<string> {
+  async removeJob(msg: Message): Promise<string> {
     const action = {
       chatId: msg.chat.id.toString(),
-      userId: msg.from.id.toString()
+      userId: msg.from.id.toString(),
     };
-    
+
     // @ts-ignore
     const scheduler = new ActionScheduler(action);
     try {
       return await scheduler.remove();
-    }
-    catch (error) {
+    } catch (error) {
       console.log(error);
       return "Job not found to remove";
     }
-
   }
   // take in an answer to current question
   // We are going to find out what is our current question
@@ -121,7 +121,4 @@ export default class Conversation {
   // invalid: we are going to ask the current question again with an error message
 
   // We are going to parse the valid answer -> we are going to set the action accordingly
-
 }
-
-

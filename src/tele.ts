@@ -12,8 +12,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 const conversation = new Conversation(conversationConfig);
 
-const COMMANDS = new Set(["/start", "/remove"]);
-
+const COMMANDS = new Set(["/start", "/remove", "/stop"]);
 const isCommand = (msg: Message) => {
   return COMMANDS.has(msg.text);
 };
@@ -23,25 +22,23 @@ bot.onText(/\/start/, async (msg: Message) => {
   await bot.sendMessage(msg.chat.id, response);
 });
 
-// 1: get session for chatId and userId (session key)
-// 2: send answer and session key to convo layer
-// 3: convo layer validates answer
-// 4: If Error, send error message (and question again)
-// 5: If no error, respond with success message (and next question)
-// 6: convo layer updates session
-// 7: bot layer sends message to user
-
 // when user sends a message and state exists
 bot.on("text", async (msg: Message) => {
   if (isCommand(msg)) return;
+
   // Ongoing conversation with user
   const response = await conversation.receiveMessage(msg);
   console.log(response);
   await bot.sendMessage(msg.chat.id, response);
 });
 
+bot.onText(/\/stop/, async (msg: Message) => {
+  const response = await conversation.abort();
+  await bot.sendMessage(msg.chat.id, response);
+});
+
 bot.onText(/\/remove/, async (msg: Message) => {
-  const response = await conversation.remove(msg);
+  const response = await conversation.removeJob(msg);
   console.log(response);
   await bot.sendMessage(msg.chat.id, response);
 });
