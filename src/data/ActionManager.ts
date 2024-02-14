@@ -1,6 +1,6 @@
 
 import queue from "./bull.js"
-import { CronRepeatOptions } from "bull";
+import { RepeatOptions } from "bullmq";
 import { CronTime } from "cron-time-generator";
 
 export default class ActionScheduler {
@@ -14,19 +14,21 @@ export default class ActionScheduler {
     }
 
     async schedule() {
+        if (!this.action?.sched) {
+            throw new Error("Action must have a schedule to be scheduled");
+        }
+
         const repeatOpts = this.#getOptionsFromSchedule()
-        await queue.add(this.key, this.action, {
+        const res = await queue.add(this.key, this.action, {
             repeat: repeatOpts,
         });
+        console.log(res);
     }
 
-    async remove() {
-        await queue.removeRepeatableByKey(this.key);
-    }
-
-    #getOptionsFromSchedule(): CronRepeatOptions {
+    #getOptionsFromSchedule(): RepeatOptions {
         return {
-            cron: this.#parseSchedToCron(),
+            tz: "Asia/Singapore",
+            pattern: this.#parseSchedToCron(),
             endDate: this.action.sched.endDate,
         }
     }
@@ -36,4 +38,21 @@ export default class ActionScheduler {
         return CronTime.onSpecificDaysAt(days, hour, min);
     }
 
+    // async #getExistingActionJob() {
+    //     const existingActionJob = await queue.getRepeatableJobs();
+    //     return existingActionJob.find(job => job.key === this.key);
+    // }
+
+    async remove(): Promise<string> {
+        const repeatableJobs = await queue.getRepeatableJobs();
+        const repeatableKey = repeatableJobs.find(job => job.name === this.key.split(":")[0]).key;
+
+        const repeatable = await queue.removeRepeatableByKey(repeatableKey);
+        // parse from cron expression
+        if (!repeatable) {
+            throw new Error("No job found to remove");
+        }
+
+        return "Job removed!"
+    }
 }

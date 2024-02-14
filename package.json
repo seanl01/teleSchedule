@@ -6,15 +6,18 @@
   "type": "module",
   "scripts": {
     "test": "jest",
-    "dev": "node --watch src/tele.js"
+    "tele": "node --watch src/tele.js",
+    "worker": "node --watch src/worker/index.js",
+    "start": "npm run tele & npm run worker"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bull": "^4.12.0",
+    "bullmq": "^5.1.11",
     "cron-time-generator": "^2.0.3",
     "dotenv": "^16.3.1",
+    "ioredis": "^5.3.2",
     "node-telegram-bot-api": "^0.64.0",
     "redis": "^4.6.12",
     "telegram-typings": "^5.0.0"

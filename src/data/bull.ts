@@ -1,8 +1,8 @@
-import Bull from "bull";
+import { Queue } from "bullmq";
 import dotenv from 'dotenv';
 dotenv.config();
 
 // @ts-ignore
-const queue = new Bull<Action>(process.env.QUEUE_NAME);
+const queue = new Queue<Action>(process.env.QUEUE_NAME);
 
 export default queue;

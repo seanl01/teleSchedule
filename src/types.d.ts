@@ -1,4 +1,3 @@
-
 type Action = {
     chatId: string,
     userId: string,
@@ -22,5 +21,17 @@ type State = {
     index: number,
     retry?: boolean,
     action: Action,
+}
+
+type Mutator = (model: import('./controller/ActionModel.js').ModelBase, cleanAnswer: any) => void;
+
+type StageWithMutator = {
+  stage: import('./controller/Stage.js').Stage,
+  mutator: Mutator
+};
+
+type ConversationConfig = {
+    stateManager: any,
+    stageWithMutators: StageWithMutator[]
 }
 

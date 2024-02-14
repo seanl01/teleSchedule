@@ -1,21 +1,26 @@
 import { Message } from "telegram-typings/index.js";
 
+export interface StageOptions {
+  question: string;
+  errorMessage: string;
+  validator: ((answer: string) => boolean) | (() => boolean);
+  parser?: (answer: string) => any;
+  accessor?: (msg: Message) => string;
+}
 
 export class Stage {
   question: string;
   errorMessage: string;
   validator: ((answer: string) => boolean) | (() => boolean);
   parser: (answer: string) => any;
-
-  // accesses specific property on message object
   accessor: (msg: Message) => string;
 
-  constructor(question: string, errorMessage: string, validator: (answer: string) => boolean, parser?: (answer: string) => any, accessor?: (msg: Message) => string) {
-    this.question = question;
-    this.errorMessage = errorMessage;
-    this.validator = validator;
-    this.parser = parser ?? ((answer: string) => answer);
-    this.accessor = accessor ?? ((msg: Message) => msg.text);
+  constructor(options: StageOptions) {
+    this.question = options.question;
+    this.errorMessage = options.errorMessage;
+    this.validator = options.validator;
+    this.parser = options.parser ?? ((answer: string) => answer);
+    this.accessor = options.accessor ?? ((msg: Message) => msg.text);
   }
 
   validate(answer: string): boolean {

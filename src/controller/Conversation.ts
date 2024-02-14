@@ -2,6 +2,7 @@ import { Message } from "telegram-typings/index.js";
 import StateManager from "../data/StateManager.js";
 import { Stage } from "./Stage.js";
 import { ActionModel } from "./ActionModel.js";
+import ActionScheduler from "../data/ActionManager.js";
 
 // if (!stage.validate(answer)) {
 //     return stage.askAgain()
@@ -14,15 +15,20 @@ export default class Conversation {
   // uses stateManager to find correct stage
   stages: Stage[];
   stateManager: StateManager;
+  mutators: ((model: ActionModel, answer: any) => void)[];
 
   // Dependency injection
-  constructor(stages: Stage[], stateManagerClass) {
-    this.stages = stages
-    this.stateManager = new stateManagerClass();
+  constructor(config: ConversationConfig) {
+    this.stages = config.stageWithMutators.map((stageWithMutator) => stageWithMutator.stage);
+    this.stateManager = new config.stateManager();
+    this.mutators = config.stageWithMutators.map((stageWithMutator) => stageWithMutator.mutator);
   }
 
   async start(msg: Message): Promise<string> {
     const actionModel = new ActionModel();
+    actionModel.model.chatId = msg.chat.id.toString();
+    actionModel.model.userId = msg.from.id.toString();
+
     const action = actionModel.model;
 
     try {
@@ -37,7 +43,7 @@ export default class Conversation {
     }
   }
 
-  async receiveMessage(msg: Message) {
+  async receiveMessage(msg: Message): Promise<string> {
     // 
     await this.stateManager.init(msg);
     const state = this.stateManager.getChatState();
@@ -46,21 +52,24 @@ export default class Conversation {
     const stage = this.stages[curIndex];
 
     if (!stage.validate(msg.text))
-      throw new Error("Invalid message");
-
-    const answer = stage.getCleanAnswer(msg);
+      return stage.askAgain();
 
     try {
+      const answer = stage.getCleanAnswer(msg);
+  
       const actionModel = new ActionModel(state.action);
-
-      // TODO: call correct function on actionmodel
-
+      
+      // Change the action model
+      const mutator = this.mutators[curIndex];
+      mutator(actionModel, answer);
+      
+      console.log("Model: ", actionModel.model);
       this.stateManager.setChatState({
         index: curIndex + 1,
         action: actionModel.model
       });
 
-      return this.stages[curIndex + 1].ask();
+      return await this.#askNextQuestionOrEnd(curIndex);
     }
     catch (error) {
       console.log(error);
@@ -69,7 +78,42 @@ export default class Conversation {
 
   }
 
+  async #askNextQuestionOrEnd(curIndex: number): Promise<string> {
+    if (curIndex + 1 < this.stages.length)
+      return this.stages[curIndex + 1].ask();
+    else
+      return await this.#endConversation();
+  }
 
+  async #endConversation(): Promise<string> {
+    await this.#processAction();
+    await this.stateManager.deleteChatState();
+    return "Done!";
+  }
+
+  async #processAction(): Promise<void> {
+    const action = await this.stateManager.getChatState().action;
+    const scheduler = new ActionScheduler(action);
+    await scheduler.schedule();
+  }
+
+  async remove(msg: Message): Promise<string> {
+    const action = {
+      chatId: msg.chat.id.toString(),
+      userId: msg.from.id.toString()
+    };
+    
+    // @ts-ignore
+    const scheduler = new ActionScheduler(action);
+    try {
+      return await scheduler.remove();
+    }
+    catch (error) {
+      console.log(error);
+      return "Job not found to remove";
+    }
+
+  }
   // take in an answer to current question
   // We are going to find out what is our current question
   // we are going to validate that answer
