@@ -24,6 +24,8 @@ bot.onText(/\/start/, async (msg: Message) => {
 
 // when user sends a message and state exists
 bot.on("text", async (msg: Message) => {
+  console.log(msg.from.id, msg.chat.id);
+
   if (isCommand(msg)) return;
 
   // Ongoing conversation with user
