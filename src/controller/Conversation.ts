@@ -114,6 +114,11 @@ export default class Conversation {
       return "Job not found to remove";
     }
   }
+
+  async isOngoing(msg: Message): Promise<boolean> {
+    await this.stateManager.init(msg);
+    return this.stateManager.hasState();
+  }
   // take in an answer to current question
   // We are going to find out what is our current question
   // we are going to validate that answer

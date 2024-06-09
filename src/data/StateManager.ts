@@ -74,7 +74,7 @@ export default class StateManager {
         return { chatId, userId };
     }
 
-    stateExists(): boolean {
+    hasState(): boolean {
         return this.state !== null;
     }
 

@@ -27,6 +27,7 @@ bot.on("text", async (msg: Message) => {
   console.log(msg.from.id, msg.chat.id);
 
   if (isCommand(msg)) return;
+  if (!conversation.isOngoing(msg)) return;
 
   // Ongoing conversation with user
   const response = await conversation.receiveMessage(msg);
