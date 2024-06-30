@@ -8,7 +8,11 @@ dotenv.config();
 // @ts-ignore
 const token = process.env.TELE_KEY;
 const bot = new TelegramBot(token);
-const connection = new IORedis({maxRetriesPerRequest: null});
+const connection = new IORedis({
+  host: process.env.REDIS_HOST!,
+  port: parseInt(process.env.REDIS_PORT!),
+  maxRetriesPerRequest: null
+});
 
 console.log(process.env.QUEUE_NAME)
 
