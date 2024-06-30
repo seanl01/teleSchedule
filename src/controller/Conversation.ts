@@ -28,7 +28,7 @@ export default class Conversation {
   }
 
   async start(msg: Message): Promise<string> {
-    const actionModel = new ActionModel();
+    const actionModel = new ActionModel(null);
     actionModel.model.chatId = msg.chat.id.toString();
     actionModel.model.userId = msg.from.id.toString();
 

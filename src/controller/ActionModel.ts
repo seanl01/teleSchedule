@@ -1,14 +1,13 @@
 
-export class ModelBase {
-  model: object;
+export class ModelBase<T> {
+  model: T;
 
-  constructor(obj: object) {
+  constructor(obj: T) {
     this.model = obj;
   }
 }
 
-export class ActionModel extends ModelBase {
-  model: Action;
+export class ActionModel extends ModelBase<Action> {
 
   constructor(action?: Action | undefined) {
     if (action)
@@ -27,6 +26,7 @@ export class ActionModel extends ModelBase {
         userId: ""
       });
     }
+    console.log("Chat started: ", this.model);
   }
 
   setTemplateMessageId(templateMessageId: string): void {
