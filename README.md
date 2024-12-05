@@ -19,6 +19,15 @@ It's very simple:
 - To cancel a job you are currently making: send `/stop`
 - To remove the existing weekly messsage you defined, send `/remove`
 
+### Running it yourself
+- Run `docker compose up`
+- Create a `.env` file in the root directory with the following contents:
+
+```
+TELE_KEY=<your_telegram_bot_key>
+TIMEZONE=<your_timezone>
+```
+
 ### Technologies used:
 - Docker Compose
 - BullMQ for defining repeatable jobs, and enqueueing jobs for worker.
