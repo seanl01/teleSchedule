@@ -28,7 +28,7 @@ TELE_KEY=<your_telegram_bot_key>
 TIMEZONE=<your_timezone>
 ```
 
-### Technologies used:
+### Technologies used
 - Docker Compose
 - BullMQ for defining repeatable jobs, and enqueueing jobs for worker.
 - Redis for underlying storage backend for BullMQ
