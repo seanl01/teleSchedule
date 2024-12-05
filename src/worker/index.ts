@@ -5,9 +5,9 @@ import IORedis from 'ioredis'
 
 dotenv.config();
 
-// @ts-ignore
 const token = process.env.TELE_KEY;
 const bot = new TelegramBot(token);
+// @ts-ignore
 const connection = new IORedis({
   host: process.env.REDIS_HOST!,
   port: parseInt(process.env.REDIS_PORT!),
@@ -29,8 +29,8 @@ console.log("File is being run!")
 const worker = new Worker(process.env.QUEUE_NAME, async job => {
   console.log(job.data);
   const data = job.data as Action;
-    const { templateMessageId, chatId } = data;
+  const { templateMessageId, chatId } = data;
 
-    console.log(data, "run!")
-    await bot.copyMessage(chatId, chatId, templateMessageId);
+  console.log(data, "run!")
+  await bot.copyMessage(chatId, chatId, templateMessageId);
 }, { connection })

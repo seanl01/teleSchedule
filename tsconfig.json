@@ -1,10 +1,9 @@
 {
-    "compilerOptions": {
-        "target": "ESnext",
-        "module": "esnext",
-        // "sourceMap": true
-    },
-    "include": [
-        "**/*.ts"
-    ]
+  "compilerOptions": {
+    "target": "ESnext",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext"
+    // "sourceMap": true
+  },
+  "include": ["**/*.ts"]
 }

@@ -26,7 +26,8 @@ export default class ActionScheduler {
 
   #getOptionsFromSchedule(): RepeatOptions {
     return {
-      tz: "Asia/Singapore",
+      // tz: "Asia/Singapore",
+      tz: process.env?.TIMEZONE ?? "America/Toronto",
       pattern: this.#parseSchedToCron(),
       endDate: this.action.sched.endDate,
     };
@@ -49,7 +50,11 @@ export default class ActionScheduler {
       return job.name === chatId && userId === job.id;
     };
 
-    const repeatableKey = repeatableJobs.find(isMatchingJob).key;
+    const repeatableKey = repeatableJobs.find(isMatchingJob)?.key;
+
+    if (!repeatableKey)
+      throw new Error("No job found to remove");
+
     const removeSuccessful = await queue.removeRepeatableByKey(repeatableKey);
 
     // parse from cron expression

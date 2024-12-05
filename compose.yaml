@@ -1,11 +1,11 @@
 services:
   tele:
-    image: tele-schedule
+    build: .
     environment:
-        - TELE_KEY=${TELE_KEY}
-        - QUEUE_NAME=actions
-        - REDIS_HOST=redis
-        - REDIS_PORT=6379
+      - TELE_KEY=${TELE_KEY}
+      - QUEUE_NAME=actions
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     restart: always
 
   redis:
@@ -13,8 +13,8 @@ services:
     command: redis-server --save 20 1 --loglevel warning
     ports:
       - "6379:6379"
-    volumes: 
+    volumes:
       - tele_redis:/data
 
 volumes:
-  tele_redis:  
+  tele_redis:
