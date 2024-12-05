@@ -1,4 +1,4 @@
-## Tele-schedule
+## Tele-Schedule ⏲️
 
 As part of a school extracurricular group, I was tasked to send a regular message every week. The content of the message was always
 pretty much the same, and it annoyed me that I could not automate sending a regularly scheduled message. Telegram had scheduled messages
