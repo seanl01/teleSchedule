@@ -20,6 +20,7 @@ It's very simple:
 - To remove the existing weekly messsage you defined, send `/remove`
 
 ### Running it yourself
+- run `tsc` to transpile files to javascript
 - Run `docker compose up`
 - Create a `.env` file in the root directory with the following contents:
 
