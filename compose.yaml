@@ -6,6 +6,7 @@ services:
       - QUEUE_NAME=actions
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - TIMEZONE=${TIMEZONE}
     restart: always
 
   redis:
